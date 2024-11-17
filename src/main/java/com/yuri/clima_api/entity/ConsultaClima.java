@@ -1,33 +1,36 @@
 package com.yuri.clima_api.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "historico_consulta")
 public class ConsultaClima {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    private String cidade;
-    private Double temperatura;
+    @Column(name = "pais", nullable = false)
+    private String pais;
+    @Column(name = "data", columnDefinition = "DATE", nullable = false)
+    private LocalDate data;
+    @Column(name = "data_de_consulta", columnDefinition = "TIMESTAMP", nullable = false)
+    private LocalDateTime dataDeConsulta;
+    @Column(name = "descricao", nullable = false, length = 500)
     private String descricao;
-    private LocalDateTime dataConsulta;
 
-    public ConsultaClima() {}
 
-    public ConsultaClima(Long id, String cidade, Double temperatura,
-                         String descricao, LocalDateTime dataConsulta) {
-        this.id = id;
-        this.cidade = cidade;
-        this.temperatura = temperatura;
+    public ConsultaClima() {
+        this.dataDeConsulta = LocalDateTime.now();
+    }
+
+    public ConsultaClima(String pais, LocalDate data, String descricao) {
+        this.pais = pais;
+        this.data = data;
+        this.dataDeConsulta = LocalDateTime.now();
         this.descricao = descricao;
-        this.dataConsulta = dataConsulta;
     }
 
     public Long getId() {
@@ -38,20 +41,28 @@ public class ConsultaClima {
         this.id = id;
     }
 
-    public String getCidade() {
-        return cidade;
+    public String getPais() {
+        return pais;
     }
 
-    public void setCidade(String cidade) {
-        this.cidade = cidade;
+    public void setPais(String pais) {
+        this.pais = pais;
     }
 
-    public Double getTemperatura() {
-        return temperatura;
+    public LocalDate getData() {
+        return data;
     }
 
-    public void setTemperatura(Double temperatura) {
-        this.temperatura = temperatura;
+    public void setData(LocalDate data) {
+        this.data = data;
+    }
+
+    public LocalDateTime getDataDeConsulta() {
+        return dataDeConsulta;
+    }
+
+    public void setDataDeConsulta(LocalDateTime dataDeConsulta) {
+        this.dataDeConsulta = dataDeConsulta;
     }
 
     public String getDescricao() {
@@ -62,12 +73,15 @@ public class ConsultaClima {
         this.descricao = descricao;
     }
 
-    public LocalDateTime getDataConsulta() {
-        return dataConsulta;
-    }
-
-    public void setDataConsulta(LocalDateTime dataConsulta) {
-        this.dataConsulta = dataConsulta;
+    @Override
+    public String toString() {
+        return "ConsultaClima{" +
+                "id=" + id +
+                ", pais='" + pais + '\'' +
+                ", data=" + data +
+                ", dataDeConsulta=" + dataDeConsulta +
+                ", descricao='" + descricao + '\'' +
+                '}';
     }
 
     @Override

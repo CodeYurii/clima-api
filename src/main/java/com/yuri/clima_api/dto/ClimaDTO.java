@@ -1,27 +1,54 @@
 package com.yuri.clima_api.dto;
 
+
 import com.yuri.clima_api.entity.ConsultaClima;
 import org.springframework.beans.BeanUtils;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class ClimaDTO {
 
-
-    private String cidade;
-    private Double temperatura;
+    private String pais;
+    private LocalDate data;
+    private LocalDateTime dataDeConsulta;
     private String descricao;
 
     public ClimaDTO(){}
 
+    public ClimaDTO(String pais, LocalDate data, String descricao, LocalDateTime dataDeConsulta) {
+        this.pais = pais;
+        this.data = data;
+        this.descricao = descricao;
+        this.dataDeConsulta = dataDeConsulta != null ? dataDeConsulta : LocalDateTime.now();
+    }
+
     public ClimaDTO(ConsultaClima entity) {
         BeanUtils.copyProperties(entity, this);
+        this.dataDeConsulta = entity.getDataDeConsulta();
     }
 
-    public String getCidade() {
-        return cidade;
+    public String getPais() {
+        return pais;
     }
 
-    public void setCidade(String cidade) {
-        this.cidade = cidade;
+    public void setPais(String pais) {
+        this.pais = pais;
+    }
+
+    public LocalDate getData() {
+        return data;
+    }
+
+    public void setData(LocalDate data) {
+        this.data = data;
+    }
+
+    public LocalDateTime getDataDeConsulta() {
+        return dataDeConsulta;
+    }
+
+    public void setDataDeConsulta(LocalDateTime dataDeConsulta) {
+        this.dataDeConsulta = dataDeConsulta;
     }
 
     public String getDescricao() {
@@ -32,11 +59,19 @@ public class ClimaDTO {
         this.descricao = descricao;
     }
 
-    public Double getTemperatura() {
-        return temperatura;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ClimaDTO climaDTO = (ClimaDTO) o;
+        return pais.equals(climaDTO.pais) && data.equals(climaDTO.data);
     }
 
-    public void setTemperatura(Double temperatura) {
-        this.temperatura = temperatura;
+    @Override
+    public int hashCode() {
+        int result = pais.hashCode();
+        result = 31 * result + data.hashCode();
+        return result;
     }
 }

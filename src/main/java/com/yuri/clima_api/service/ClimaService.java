@@ -4,53 +4,43 @@ import com.yuri.clima_api.dto.ClimaDTO;
 import com.yuri.clima_api.entity.ConsultaClima;
 import com.yuri.clima_api.repository.ConsultaClimaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDate;
 
 
 @Service
 public class ClimaService {
 
-    @Autowired
-    private ConsultaClimaRepository repository;
+    private final RestTemplate restTemplate;
+    private final ConsultaClimaRepository consultaClimaRepository;
 
-    public ClimaDTO buscarClima(String cidade) {
-        String apiKey = "SUA_API_KEY";
-        String url = String.format(
-                "https://api.openweathermap.org/data/2.5/weather?q=%s&appid=%s&units=metric&lang=pt_br",
-                cidade, apiKey);
 
-        RestTemplate restTemplate = new RestTemplate();
-        var response = restTemplate.getForObject(url, Map.class);
 
-        if (response != null) {
-            ClimaDTO clima = new ClimaDTO();
-            clima.setCidade((String) response.get("name"));
-            var main = (Map<String, Object>) response.get("main");
-            clima.setTemperatura((Double) main.get("temp"));
-            var weather = (Map<String, Object>) ((List<?>) response.get("weather")).get(0);
-            clima.setDescricao((String) weather.get("description"));
+    public ClimaService(RestTemplate restTemplate, ConsultaClimaRepository consultaClimaRepository) {
+        this.restTemplate = restTemplate;
+        this.consultaClimaRepository = consultaClimaRepository;
+    }
 
-            // Salvar no banco
-            ConsultaClima consulta = new ConsultaClima();
-            consulta.setCidade(clima.getCidade());
-            consulta.setTemperatura(clima.getTemperatura());
-            consulta.setDescricao(clima.getDescricao());
-            consulta.setDataConsulta(LocalDateTime.now());
-            repository.save(consulta);
+    public ClimaDTO buscarClima(String pais, String token) {
+        String url = "http://apiadvisor.climatempo.com.br/api/v1/anl/synoptic/locale/" + pais + "?token=" + token;
 
-            return clima;
+        try {
+            ResponseEntity<ClimaDTO> response = restTemplate.getForEntity(url, ClimaDTO.class);
+            ClimaDTO climaResponse = response.getBody(); // Pegando o primeiro elemento
+
+            ConsultaClima consultaClima = new ConsultaClima();
+            consultaClima.setPais(climaResponse.getPais());
+            consultaClima.setData(climaResponse.getData());
+            consultaClima.setDescricao(climaResponse.getDescricao());
+            consultaClima.setDataDeConsulta(climaResponse.getDataDeConsulta());
+            consultaClimaRepository.save(consultaClima);
+
+            return new ClimaDTO(consultaClima);
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao consultar a API de clima: " + e.getMessage(), e);
         }
-        return null;
     }
-
-    public List<ConsultaClima> listarHistorico() {
-        return repository.findAll(); // Recupera todas as consultas do banco
-    }
-
 }
-
